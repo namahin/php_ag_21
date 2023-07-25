@@ -1,19 +1,24 @@
 <?php
 
-use Illuminate\Http\Request;
+use App\Http\Controllers\TodoController;
+use App\Http\Controllers\UserController;
+use App\Http\Middleware\TokenVerificationMiddleware;
 use Illuminate\Support\Facades\Route;
 
-/*
-|--------------------------------------------------------------------------
-| API Routes
-|--------------------------------------------------------------------------
-|
-| Here is where you can register API routes for your application. These
-| routes are loaded by the RouteServiceProvider and all of them will
-| be assigned to the "api" middleware group. Make something great!
-|
-*/
 
-Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
-    return $request->user();
+// Authentication routes
+Route::post('/user-registration', [UserController::class, 'UserRegistration']);
+Route::post('/user-login', [UserController::class, 'UserLogin']);
+Route::post('/send-otp', [UserController::class, 'SendOTPCode']);
+Route::post('/verify-otp', [UserController::class, 'VerifyOTP']);
+Route::post('/reset-password', [UserController::class, 'ResetPassword'])->middleware([TokenVerificationMiddleware::class]);
+
+
+// Todo routes with TokenVerificationMiddleware
+Route::middleware('token.verify')->group(function () {
+    Route::get('/todo', [TodoController::class, 'index']);
+    Route::post('/todo/create', [TodoController::class, 'store']);
+    Route::get('/todo/read/{id}', [TodoController::class, 'show']);
+    Route::put('/todo/update/{id}', [TodoController::class, 'update']);
+    Route::delete('/todo/delete/{id}', [TodoController::class, 'destroy']);
 });
